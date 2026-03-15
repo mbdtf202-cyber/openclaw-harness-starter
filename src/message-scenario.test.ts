@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createMessageScenarioHarness,
-  createOutboundTestPlugin,
-  createTestRegistry,
-} from "openclaw/plugin-sdk/test-utils";
+import { createMessageScenarioHarness } from "./harness/message-scenario.js";
 
 describe("message scenario harness", () => {
   it("records target resolution and outbound delivery", async () => {
@@ -12,7 +8,15 @@ describe("message scenario harness", () => {
         {
           id: "demo-sms",
           label: "Demo SMS",
-          resolveTarget: ({ to, accountId, mode }) => ({
+          resolveTarget: ({
+            to,
+            accountId,
+            mode,
+          }: {
+            to?: string;
+            accountId?: string | null;
+            mode?: "explicit" | "implicit" | "heartbeat";
+          }) => ({
             ok: true,
             to: `sms:${accountId ?? "default"}:${mode ?? "explicit"}:${String(to ?? "")}`,
           }),
@@ -20,68 +24,46 @@ describe("message scenario harness", () => {
       ],
     });
 
-    await harness.withRegistry(async () => {
-      const outbound = createOutboundTestPlugin({
-        id: "demo-sms",
-        outbound: harness.registry.channels[0]!.plugin.outbound!,
-        label: "Demo SMS",
-      }).outbound!;
+    const plugin = harness.getPlugin("demo-sms");
+    const resolved = plugin.outbound.resolveTarget?.({
+      to: "+15550001111",
+      accountId: "ops",
+      mode: "explicit",
+    });
 
-      const registry = createTestRegistry([
-        {
-          pluginId: "demo-sms",
-          plugin: createOutboundTestPlugin({
-            id: "demo-sms",
-            outbound,
-            label: "Demo SMS",
-          }),
-          source: "starter",
-        },
-      ]);
+    expect(resolved).toEqual({
+      ok: true,
+      to: "sms:ops:explicit:+15550001111",
+    });
 
-      expect(registry.channels).toHaveLength(1);
+    const result = await plugin.outbound.sendText({
+      to: resolved && resolved.ok ? resolved.to : "",
+      text: "hello harness",
+      accountId: "ops",
+    });
 
-      const resolved = outbound.resolveTarget?.({
-        cfg: {},
+    expect(result).toEqual({
+      channel: "demo-sms",
+      messageId: "scenario-1",
+    });
+    expect(harness.targetResolutions).toEqual([
+      {
+        channel: "demo-sms",
         to: "+15550001111",
         accountId: "ops",
         mode: "explicit",
-      });
-      expect(resolved).toEqual({
-        ok: true,
+      },
+    ]);
+    expect(harness.deliveries).toEqual([
+      {
+        kind: "text",
+        channel: "demo-sms",
         to: "sms:ops:explicit:+15550001111",
-      });
-
-      const result = await outbound.sendText({
-        cfg: {},
-        to: resolved && resolved.ok ? resolved.to : "",
         text: "hello harness",
         accountId: "ops",
-      });
-
-      expect(result).toEqual({
-        channel: "demo-sms",
-        messageId: "scenario-1",
-      });
-      expect(harness.targetResolutions).toEqual([
-        {
-          channel: "demo-sms",
-          cfg: {},
-          to: "+15550001111",
-          allowFrom: undefined,
-          accountId: "ops",
-          mode: "explicit",
-        },
-      ]);
-      expect(harness.deliveries).toEqual([
-        expect.objectContaining({
-          kind: "text",
-          channel: "demo-sms",
-          to: "sms:ops:explicit:+15550001111",
-          text: "hello harness",
-          accountId: "ops",
-        }),
-      ]);
-    });
+        replyToId: undefined,
+        threadId: undefined,
+      },
+    ]);
   });
 });
