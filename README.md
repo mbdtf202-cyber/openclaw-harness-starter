@@ -31,6 +31,8 @@ copy patterns from here instead of using the whole starter.
 ```text
 .
 ├── .github/workflows/ci.yml
+├── CHANGELOG.md
+├── CONTRIBUTING.md
 ├── .gitignore
 ├── LICENSE
 ├── README.md
@@ -123,6 +125,14 @@ It exists so the generated repo is useful immediately after pushing to GitHub.
 #### `.gitignore`
 
 Covers the normal generated files for a TypeScript/Vitest repo.
+
+#### `CONTRIBUTING.md`
+
+Gives collaborators a minimal contribution contract for this harness repo.
+
+#### `CHANGELOG.md`
+
+Provides a simple release history so the repo can evolve beyond a one-off demo.
 
 #### `LICENSE`
 
@@ -233,6 +243,9 @@ Those can be added later if your harness really needs them.
 
 The included GitHub Actions workflow is enough for a template or small internal
 tooling repo.
+
+The workflow intentionally avoids lockfile-dependent caching so template users
+can push immediately without first committing a generated `pnpm-lock.yaml`.
 
 Typical next steps after generation:
 
