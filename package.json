@@ -1,0 +1,16 @@
+{
+  "name": "openclaw-harness-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Starter project for OpenClaw harness engineering",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "openclaw": "^2026.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
