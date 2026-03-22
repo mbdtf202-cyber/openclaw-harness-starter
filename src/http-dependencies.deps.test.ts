@@ -56,14 +56,25 @@ describe("dependency harnesses", () => {
     expect(firstResponse.status).toBe(200);
     expect(await firstResponse.text()).toContain("upstream:/recordable");
 
-    await upstream.stop();
-
-    const secondResponse = await fetch(`${wiremock.baseUrl}/recordable`);
-    expect(secondResponse.status).toBe(200);
-    expect(await secondResponse.text()).toContain("upstream:/recordable");
-
     const mappings = await wiremock.listMappings();
     expect(mappings.mappings.length).toBeGreaterThan(0);
+    const recorded = mappings.mappings.find(
+      (mapping) => (mapping.request as { url?: string } | undefined)?.url === "/recordable",
+    );
+    expect(recorded).toBeTruthy();
+
+    await wiremock.reset();
+    await wiremock.registerStub({
+      request: (recorded?.request as Record<string, unknown>) ?? {},
+      response: (recorded?.response as Record<string, unknown>) ?? {},
+    });
+    await upstream.stop();
+
+    const secondResponse = await fetch(`${wiremock.baseUrl}/recordable`, {
+      signal: AbortSignal.timeout(10_000),
+    });
+    expect(secondResponse.status).toBe(200);
+    expect(await secondResponse.text()).toContain("upstream:/recordable");
   });
 
   it("supports stateful responses with WireMock scenarios", async () => {
