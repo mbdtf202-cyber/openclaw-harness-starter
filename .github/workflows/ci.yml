@@ -6,7 +6,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  OPENCLAW_REF: "v2026.3.16"
+  OPENCLAW_REF: "v2026.3.12"
 
 permissions:
   contents: read

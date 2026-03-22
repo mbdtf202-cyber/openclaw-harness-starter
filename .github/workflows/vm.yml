@@ -6,7 +6,7 @@ on:
       openclaw_ref:
         description: OpenClaw ref to validate against
         required: false
-        default: v2026.3.16
+        default: v2026.3.12
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
