@@ -64,7 +64,7 @@ jobs:
 
       - name: Install OpenClaw deps
         if: matrix.needs_openclaw
-        run: pnpm --dir openclaw install --no-frozen-lockfile
+        run: pnpm --dir openclaw install --no-frozen-lockfile --config.auto-install-peers=false
 
       - name: Build OpenClaw
         if: matrix.needs_openclaw
