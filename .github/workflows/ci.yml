@@ -4,12 +4,45 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  required:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: typecheck
+            script: pnpm typecheck
+            needs_openclaw: false
+          - name: test
+            script: pnpm test
+            needs_openclaw: false
+          - name: test:e2e
+            script: pnpm test:e2e
+            needs_openclaw: true
+          - name: test:contracts
+            script: pnpm test:contracts
+            needs_openclaw: false
+          - name: test:deps
+            script: pnpm test:deps
+            needs_openclaw: false
+          - name: test:fault
+            script: pnpm test:fault
+            needs_openclaw: false
     steps:
-      - name: Checkout
+      - name: Checkout harness repo
         uses: actions/checkout@v4
+
+      - name: Checkout OpenClaw
+        if: matrix.needs_openclaw
+        uses: actions/checkout@v4
+        with:
+          repository: openclaw/openclaw
+          path: openclaw
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -18,12 +51,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            openclaw/pnpm-lock.yaml
 
-      - name: Install
-        run: pnpm install
+      - name: Install harness deps
+        run: pnpm install --ignore-workspace
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Install OpenClaw deps
+        if: matrix.needs_openclaw
+        run: pnpm --dir openclaw install
 
-      - name: Test
-        run: pnpm test
+      - name: Build OpenClaw
+        if: matrix.needs_openclaw
+        run: pnpm --dir openclaw build
+
+      - name: Run ${{ matrix.name }}
+        env:
+          OPENCLAW_REPO_DIR: ${{ matrix.needs_openclaw && format('{0}/openclaw', github.workspace) || '' }}
+        run: ${{ matrix.script }}

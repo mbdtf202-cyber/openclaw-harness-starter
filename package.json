@@ -1,21 +1,44 @@
 {
   "name": "openclaw-harness-starter",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "starterVersion": "2026.3.23.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.32.1",
-  "description": "Starter project for OpenClaw harness engineering",
+  "description": "Framework-authoring repo for OpenClaw harness engineering with real Gateway, contract, dependency, fault, live, and VM lanes",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "test:contracts": "vitest run --config vitest.config.ts src/acp.contract.test.ts src/gateway-ws.contract.test.ts",
+    "test:deps": "vitest run --config vitest.config.ts src/http-dependencies.deps.test.ts",
+    "test:fault": "vitest run --config vitest.config.ts src/network-faults.fault.test.ts",
+    "test:live": "tsx src/harness/live/run-live.ts --all",
+    "test:live:discord": "tsx src/harness/live/run-live.ts --channel discord",
+    "test:live:telegram": "tsx src/harness/live/run-live.ts --channel telegram",
+    "test:live:slack": "tsx src/harness/live/run-live.ts --channel slack",
+    "test:live:mattermost": "tsx src/harness/live/run-live.ts --channel mattermost",
+    "test:vm": "tsx src/harness/vm/run-vm.ts --all",
+    "test:vm:macos": "tsx src/harness/vm/run-vm.ts --os macos",
+    "test:vm:windows": "tsx src/harness/vm/run-vm.ts --os windows",
+    "test:vm:linux": "tsx src/harness/vm/run-vm.ts --os linux",
+    "test:watch": "vitest --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@agentclientprotocol/sdk": "0.16.1",
+    "@testcontainers/mockserver": "^11.8.1",
+    "@testcontainers/toxiproxy": "^11.8.1",
     "@types/node": "^25.3.3",
+    "@types/ws": "^8.5.14",
+    "mockserver-client": "^5.15.0",
+    "testcontainers": "^11.8.1",
+    "toxiproxy-node-client": "^2.0.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "ws": "^8.19.0"
   }
 }

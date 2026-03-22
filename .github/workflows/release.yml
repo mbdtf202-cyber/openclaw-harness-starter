@@ -1,0 +1,60 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout harness repo
+        uses: actions/checkout@v4
+
+      - name: Checkout OpenClaw
+        uses: actions/checkout@v4
+        with:
+          repository: openclaw/openclaw
+          path: openclaw
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            openclaw/pnpm-lock.yaml
+
+      - name: Install harness deps
+        run: pnpm install --ignore-workspace
+
+      - name: Install OpenClaw deps
+        run: pnpm --dir openclaw install
+
+      - name: Build OpenClaw
+        run: pnpm --dir openclaw build
+
+      - name: Required release checks
+        env:
+          OPENCLAW_REPO_DIR: ${{ github.workspace }}/openclaw
+        run: |
+          set -euxo pipefail
+          pnpm typecheck
+          pnpm test
+          pnpm test:e2e
+          pnpm test:contracts
+          pnpm test:deps
+          pnpm test:fault
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

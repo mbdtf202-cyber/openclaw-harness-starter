@@ -1,0 +1,60 @@
+name: vm
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vm:
+    runs-on: [self-hosted, macOS]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos
+            extra_args: >-
+              --json
+              --discord-token-env OPENCLAW_PARALLELS_DISCORD_TOKEN
+              --discord-guild-id $OPENCLAW_PARALLELS_DISCORD_GUILD_ID
+              --discord-channel-id $OPENCLAW_PARALLELS_DISCORD_CHANNEL_ID
+          - os: windows
+            extra_args: --json
+          - os: linux
+            extra_args: --json
+    steps:
+      - name: Checkout harness repo
+        uses: actions/checkout@v4
+
+      - name: Checkout OpenClaw
+        uses: actions/checkout@v4
+        with:
+          repository: openclaw/openclaw
+          path: openclaw
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install harness deps
+        run: pnpm install --ignore-workspace
+
+      - name: Install OpenClaw deps
+        run: pnpm --dir openclaw install
+
+      - name: Build OpenClaw
+        run: pnpm --dir openclaw build
+
+      - name: Run VM lane
+        env:
+          OPENCLAW_REPO_DIR: ${{ github.workspace }}/openclaw
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENCLAW_PARALLELS_DISCORD_TOKEN: ${{ secrets.OPENCLAW_PARALLELS_DISCORD_TOKEN }}
+          OPENCLAW_PARALLELS_DISCORD_GUILD_ID: ${{ secrets.OPENCLAW_PARALLELS_DISCORD_GUILD_ID }}
+          OPENCLAW_PARALLELS_DISCORD_CHANNEL_ID: ${{ secrets.OPENCLAW_PARALLELS_DISCORD_CHANNEL_ID }}
+        run: pnpm test:vm:${{ matrix.os }} -- ${{ matrix.extra_args }}

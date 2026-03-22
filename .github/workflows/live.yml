@@ -1,0 +1,60 @@
+name: live
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [discord, telegram, slack, mattermost]
+    steps:
+      - name: Checkout harness repo
+        uses: actions/checkout@v4
+
+      - name: Checkout OpenClaw
+        uses: actions/checkout@v4
+        with:
+          repository: openclaw/openclaw
+          path: openclaw
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            openclaw/pnpm-lock.yaml
+
+      - name: Install harness deps
+        run: pnpm install --ignore-workspace
+
+      - name: Install OpenClaw deps
+        run: pnpm --dir openclaw install
+
+      - name: Build OpenClaw
+        run: pnpm --dir openclaw build
+
+      - name: Run live lane
+        env:
+          OPENCLAW_REPO_DIR: ${{ github.workspace }}/openclaw
+          OPENCLAW_LIVE_CONFIG_JSON: ${{ secrets.OPENCLAW_LIVE_CONFIG_JSON }}
+          OPENCLAW_LIVE_DISCORD_TOKEN: ${{ secrets.OPENCLAW_LIVE_DISCORD_TOKEN }}
+          OPENCLAW_LIVE_DISCORD_CHANNEL_ID: ${{ secrets.OPENCLAW_LIVE_DISCORD_CHANNEL_ID }}
+          OPENCLAW_LIVE_TELEGRAM_BOT_TOKEN: ${{ secrets.OPENCLAW_LIVE_TELEGRAM_BOT_TOKEN }}
+          OPENCLAW_LIVE_TELEGRAM_CHAT_ID: ${{ secrets.OPENCLAW_LIVE_TELEGRAM_CHAT_ID }}
+          OPENCLAW_LIVE_SLACK_BOT_TOKEN: ${{ secrets.OPENCLAW_LIVE_SLACK_BOT_TOKEN }}
+          OPENCLAW_LIVE_SLACK_CHANNEL_ID: ${{ secrets.OPENCLAW_LIVE_SLACK_CHANNEL_ID }}
+          OPENCLAW_LIVE_MATTERMOST_BASE_URL: ${{ secrets.OPENCLAW_LIVE_MATTERMOST_BASE_URL }}
+          OPENCLAW_LIVE_MATTERMOST_TOKEN: ${{ secrets.OPENCLAW_LIVE_MATTERMOST_TOKEN }}
+          OPENCLAW_LIVE_MATTERMOST_CHANNEL_ID: ${{ secrets.OPENCLAW_LIVE_MATTERMOST_CHANNEL_ID }}
+        run: pnpm test:live:${{ matrix.channel }}
