@@ -189,17 +189,20 @@ OPENCLAW_HARNESS_ARTIFACT_DIR=/absolute/path
 - `test:contracts`
 - `test:deps`
 - `test:fault`
+- default OpenClaw validation ref in CI/release: `v2026.3.16`
 
 ### Secret-gated
 
 - `live.yml`
   - matrix: Discord / Telegram / Slack / Mattermost
+  - `openclaw_ref` input defaults to `v2026.3.16`
 
 ### Self-hosted
 
 - `vm.yml`
   - matrix: macOS / Windows / Linux
   - expected runner: self-hosted macOS with Parallels access
+  - `openclaw_ref` input defaults to `v2026.3.16`
 
 ## Release flow
 

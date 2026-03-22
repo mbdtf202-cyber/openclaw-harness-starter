@@ -6,6 +6,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  OPENCLAW_REF: "v2026.3.16"
 
 permissions:
   contents: read
@@ -45,6 +46,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: openclaw/openclaw
+          ref: ${{ env.OPENCLAW_REF }}
           path: openclaw
 
       - name: Setup pnpm
