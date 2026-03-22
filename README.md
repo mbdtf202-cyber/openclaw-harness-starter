@@ -102,8 +102,11 @@ roundtrip.
 │       ├── vm/
 │       └── openclaw-*.ts
 ├── tsconfig.json
+├── vitest.contracts.config.ts
 ├── vitest.config.ts
+├── vitest.deps.config.ts
 └── vitest.e2e.config.ts
+└── vitest.fault.config.ts
 ```
 
 ## Starter and release contract

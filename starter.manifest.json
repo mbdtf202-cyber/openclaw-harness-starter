@@ -60,7 +60,10 @@
     "src/starter-manifest.test.ts",
     "src/vm-runner.test.ts",
     "tsconfig.json",
+    "vitest.contracts.config.ts",
     "vitest.config.ts",
-    "vitest.e2e.config.ts"
+    "vitest.deps.config.ts",
+    "vitest.e2e.config.ts",
+    "vitest.fault.config.ts"
   ]
 }
