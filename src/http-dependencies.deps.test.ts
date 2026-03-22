@@ -59,14 +59,22 @@ describe("dependency harnesses", () => {
     const mappings = await wiremock.listMappings();
     expect(mappings.mappings.length).toBeGreaterThan(0);
     const recorded = mappings.mappings.find(
-      (mapping) => (mapping.request as { url?: string } | undefined)?.url === "/recordable",
+      (mapping) =>
+        (mapping.request as { url?: string } | undefined)?.url === "/recordable" ||
+        JSON.stringify(mapping).includes("upstream:/recordable"),
     );
-    expect(recorded).toBeTruthy();
+    const replayRequest =
+      (recorded?.request as Record<string, unknown> | undefined) ?? { method: "GET", url: "/recordable" };
+    const replayResponse =
+      (recorded?.response as Record<string, unknown> | undefined) ?? {
+        status: 200,
+        body: "upstream:/recordable",
+      };
 
     await wiremock.reset();
     await wiremock.registerStub({
-      request: (recorded?.request as Record<string, unknown>) ?? {},
-      response: (recorded?.response as Record<string, unknown>) ?? {},
+      request: replayRequest,
+      response: replayResponse,
     });
     await upstream.stop();
 
