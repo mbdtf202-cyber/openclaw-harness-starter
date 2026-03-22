@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 permissions:
   contents: read
 
@@ -35,11 +38,11 @@ jobs:
             needs_openclaw: false
     steps:
       - name: Checkout harness repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout OpenClaw
         if: matrix.needs_openclaw
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: openclaw/openclaw
           path: openclaw
@@ -48,7 +51,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
